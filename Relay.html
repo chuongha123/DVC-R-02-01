@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Device Configuration</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <style>
+        :root {
+            --primary: #1e88e5;
+            --primary-soft: #e3f2fd;
+            --primary-dark: #0b4fa3;
+            --bg: #f5f7fb;
+            --text: #123047;
+            --border: #d0d7e2;
+            --danger: #e53935;
+            --success: #4caf50;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .page {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 12px 10px 24px;
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+            padding: 12px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .header h1 {
+            margin: 4px 0;
+            font-size: 1.2rem;
+            color: var(--primary-dark);
+        }
+
+        .header small {
+            color: #60738a;
+            font-size: 0.8rem;
+        }
+
+        .tabs {
+            display: flex;
+            border-radius: 999px;
+            background: var(--primary-soft);
+            padding: 4px;
+            margin-bottom: 12px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .tab-btn {
+            flex: 1 1 auto;
+            border: none;
+            background: transparent;
+            padding: 8px 10px;
+            font-size: 0.85rem;
+            border-radius: 999px;
+            color: var(--primary-dark);
+            white-space: nowrap;
+            cursor: pointer;
+        }
+
+        .tab-btn.active {
+            background: #fff;
+            color: var(--primary-dark);
+            font-weight: 600;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.15s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(2px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        form {
+            margin-top: 6px;
+        }
+
+        .form-group {
+            width: 100%;
+            margin-bottom: 8px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            margin-bottom: 3px;
+            color: #58687e;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 6px 8px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            font-size: 0.85rem;
+            outline: none;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 1px rgba(30, 136, 229, 0.15);
+        }
+
+        .section-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--primary-dark);
+            margin: 10px 0 4px;
+        }
+
+        .hint {
+            font-size: 0.75rem;
+            color: #7a8ba0;
+            margin-bottom: 6px;
+        }
+
+        .password-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .show-password {
+            font-size: 0.75rem;
+            color: #58687e;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            user-select: none;
+        }
+
+        .btn-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 999px;
+            padding: 6px 14px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .btn-primary:active {
+            background: var(--primary-dark);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary-dark);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        .btn-sm {
+            padding: 4px 10px;
+            font-size: 0.8rem;
+            border-radius: 999px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+            gap: 4px 8px;
+            font-size: 0.8rem;
+            margin-bottom: 8px;
+        }
+
+        .info-label {
+            color: #60738a;
+        }
+
+        .info-value {
+            font-weight: 500;
+            color: #1b3552;
+            word-break: break-all;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 10px 0;
+        }
+
+        .pill {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: var(--primary-soft);
+            font-size: 0.75rem;
+            color: var(--primary-dark);
+            margin-left: 4px;
+        }
+
+        .text-muted {
+            color: #7a8ba0;
+            font-size: 0.8rem;
+        }
+
+        .mt-4 {
+            margin-top: 12px;
+        }
+
+        .static-ip-block {
+            display: none;
+        }
+
+        /* Relay table styles */
+        .relay-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 12px;
+        }
+
+        .relay-table th,
+        .relay-table td {
+            padding: 10px 6px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .relay-table th {
+            background-color: var(--primary-soft);
+            color: var(--primary-dark);
+            font-weight: 600;
+            font-size: 0.8rem;
+            white-space: nowrap;
+        }
+
+        .relay-table td {
+            font-size: 0.8rem;
+        }
+
+        .relay-table .channel-label {
+            font-weight: 500;
+            background-color: #f8f9fa;
+            text-align: left;
+            padding-left: 10px;
+        }
+
+        .checkbox-cell {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .checkbox-cell input[type="checkbox"] {
+            margin: 0;
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Switch styles */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 26px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--success);
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--success);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+
+        .switch.disabled .slider {
+            background-color: #e0e0e0;
+            cursor: not-allowed;
+        }
+
+        .switch.disabled .slider:before {
+            background-color: #f5f5f5;
+        }
+
+        .control-cell {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .control-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .control-label span {
+            font-size: 0.7rem;
+            color: #666;
+        }
+
+        .control-label .state-text {
+            font-weight: 500;
+            font-size: 0.75rem;
+            margin-top: 2px;
+        }
+
+        /* Highlight exclusive groups */
+        .no-nc-group {
+            background-color: rgba(227, 242, 253, 0.3);
+        }
+
+        @media (max-width: 600px) {
+            .page {
+                padding: 8px 6px 14px;
+            }
+
+            .card {
+                padding: 10px 8px;
+            }
+
+            .header h1 {
+                font-size: 1.05rem;
+            }
+
+            .relay-table th,
+            .relay-table td {
+                padding: 8px 4px;
+                font-size: 0.75rem;
+            }
+            
+            .relay-table .channel-label {
+                padding-left: 6px;
+            }
+            
+            .checkbox-cell input[type="checkbox"] {
+                width: 16px;
+                height: 16px;
+            }
+            
+            .switch {
+                width: 44px;
+                height: 24px;
+            }
+            
+            .slider:before {
+                height: 16px;
+                width: 16px;
+            }
+            
+            input:checked + .slider:before {
+                transform: translateX(20px);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page">
+        <div class="header">
+            <h1>WEB DEVICE CONFIGURATION</h1>
+            <small id="header_subtitle"></small>
+        </div>
+
+        <div class="card">
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="wifi">WiFi</button>
+                <button class="tab-btn" data-tab="relay">Device</button>
+                <button class="tab-btn" data-tab="server">Server</button>
+                <button class="tab-btn" data-tab="system">System</button>
+            </div>
+
+            <!-- WiFi Tab -->
+            <div class="tab-content active" id="tab-wifi">
+                <div class="section-title">WiFi Configuration</div>
+                <div class="hint">Nhập thông tin WiFi để thiết bị kết nối mạng.</div>
+
+                <form id="wifi_form">
+                    <div class="form-group">
+                        <label for="ssid">SSID</label>
+                        <input id="ssid" name="ssid" type="text" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Mật khẩu WiFi</label>
+                        <div class="password-wrapper">
+                            <input id="password" name="password" type="password" />
+                            <label class="show-password">
+                                <input type="checkbox" id="togglePassword" />
+                                <label for="showPassword">Hiện mật khẩu</label>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="section-title">IP Mode</div>
+                    <div class="hint">Chọn DHCP hoặc cấu hình IP tĩnh.</div>
+
+                    <div class="form-group">
+                        <label for="ip_mode">Chế độ IP</label>
+                        <select id="ip_mode" name="ip_mode">
+                            <option value="dhcp">DHCP (Tự động)</option>
+                            <option value="static">Static (Cố định)</option>
+                        </select>
+                    </div>
+
+                    <!-- Static IP fields - hidden when DHCP -->
+                    <div id="static_ip_block" class="static-ip-block">
+                        <div class="form-group">
+                            <label for="ip">IP Address</label>
+                            <input id="ip" name="ip" type="text" placeholder="192.168.1.50" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="mask">Subnet Mask</label>
+                            <input id="mask" name="mask" type="text" placeholder="255.255.255.0" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="gw">Gateway</label>
+                            <input id="gw" name="gw" type="text" placeholder="192.168.1.1" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="dns1">DNS 1</label>
+                            <input id="dns1" name="dns1" type="text" placeholder="8.8.8.8" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="dns2">DNS 2</label>
+                            <input id="dns2" name="dns2" type="text" placeholder="8.8.4.4" />
+                        </div>
+                    </div>
+
+                    <div class="btn-row">
+                        <button type="submit" class="btn btn-primary">Lưu WiFi</button>
+                    </div>
+
+                    <div class="mt-4 text-muted" id="wifi_status"></div>
+                </form>
+            </div>
+
+            <!-- Relay Tab -->
+            <div class="tab-content" id="tab-relay">
+                <div class="section-title">Relay Configuration</div>
+                <div class="section-title">DVC-R-00-01</div>
+                <div class="hint">Cấu hình kênh relay (Enable, NO/NC, Control).</div>
+
+                <form id="relay_form">
+                    <table class="relay-table">
+                        <thead>
+                            <tr>
+                                <th>Channel</th>
+                                <th>Enable</th>
+                                <th class="no-nc-group">NO</th>
+                                <th class="no-nc-group">NC</th>
+                                <th>CONTROL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Channel 1 -->
+                            <tr>
+                                <td class="channel-label">Channel 1</td>
+                                <td class="checkbox-cell">
+                                    <input type="checkbox" id="r1_enable" name="r1_enable">
+                                </td>
+                                <td class="checkbox-cell no-nc-group">
+                                    <input type="checkbox" id="r1_no" name="r1_no">
+                                </td>
+                                <td class="checkbox-cell no-nc-group">
+                                    <input type="checkbox" id="r1_nc" name="r1_nc">
+                                </td>
+                                <td class="control-cell">
+                                    <div class="control-label">
+                                        <label class="switch" id="r1_switch">
+                                            <input type="checkbox" id="r1_control" name="r1_control">
+                                            <span class="slider"></span>
+                                        </label>
+                                        <div class="state-text" id="r1_state">OFF</div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <!-- Channel 2 -->
+                            <tr>
+                                <td class="channel-label">Channel 2</td>
+                                <td class="checkbox-cell">
+                                    <input type="checkbox" id="r2_enable" name="r2_enable">
+                                </td>
+                                <td class="checkbox-cell no-nc-group">
+                                    <input type="checkbox" id="r2_no" name="r2_no">
+                                </td>
+                                <td class="checkbox-cell no-nc-group">
+                                    <input type="checkbox" id="r2_nc" name="r2_nc">
+                                </td>
+                                <td class="control-cell">
+                                    <div class="control-label">
+                                        <label class="switch" id="r2_switch">
+                                            <input type="checkbox" id="r2_control" name="r2_control">
+                                            <span class="slider"></span>
+                                        </label>
+                                        <div class="state-text" id="r2_state">OFF</div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="hint">
+                        <strong>Lưu ý:</strong> 
+                        <ul style="margin: 4px 0 4px 16px; padding: 0;">
+                            <li>NO và NC là lựa chọn loại tiếp điểm (mutually exclusive)</li>
+                            <li>CONTROL: Bật/Tắt relay (ON/OFF)</li>
+                            <li>Khi Enable bị tắt, các tùy chọn khác sẽ bị vô hiệu hóa</li>
+                        </ul>
+                    </div>
+
+                    <div class="btn-row">
+                        <button type="submit" class="btn btn-primary">Lưu Relay</button>
+                    </div>
+                    <div class="mt-4 text-muted" id="relay_status"></div>
+                </form>
+            </div>
+
+            <!-- Server Tab -->
+            <div class="tab-content" id="tab-server">
+                <div class="section-title">Server Configuration</div>
+                <div class="hint">Nhập IP Server và Port để thiết bị kết nối đến server.</div>
+
+                <form id="server_form">
+                    <div class="form-group">
+                        <label for="server_ip">Server IP / URL</label>
+                        <input id="server_ip" name="server_ip" type="text"
+                            placeholder="192.168.1.100 hoặc https://api.example.com" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="server_port">Port</label>
+                        <input id="server_port" name="server_port" type="number" placeholder="1001" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="access_token">Access Token</label>
+                        <input id="access_token" name="access_token" type="text" placeholder="Nhập token để xác thực" />
+                    </div>
+
+                    <div class="btn-row">
+                        <button type="submit" class="btn btn-primary">Lưu cấu hình Server</button>
+                    </div>
+
+                    <div class="mt-4 text-muted" id="server_status"></div>
+                </form>
+            </div>
+
+            <!-- System Tab -->
+            <div class="tab-content" id="tab-system">
+                <div class="section-title">System Information</div>
+                <div class="hint">Thông tin thiết bị.</div>
+
+                <div class="info-grid">
+                    <div class="info-label">Device ID</div>
+                    <div class="info-value" id="device_id">...</div>
+                    <div class="info-label">Firmware</div>
+                    <div class="info-value" id="fw_version">...</div>
+                    <div class="info-label">WiFi IP</div>
+                    <div class="info-value" id="current_ip">...</div>
+                    <div class="info-label">WiFi SSID</div>
+                    <div class="info-value" id="wifi_ssid">...</div>
+                    <div class="info-label">WiFi MAC</div>
+                    <div class="info-value" id="wifi_mac">...</div>
+                    <div class="info-label">WiFi RSSI</div>
+                    <div class="info-value" id="wifi_rssi">...</div>
+                    <div class="info-label">Uptime</div>
+                    <div class="info-value" id="uptime">...</div>
+                    <div class="info-label">Free Heap</div>
+                    <div class="info-value" id="free_heap">...</div>
+                    <div class="info-label">Reset Reason</div>
+                    <div class="info-value" id="reset_reason">...</div>
+                </div>
+
+                <hr />
+
+                <div class="section-title">Firmware Update (OTA)</div>
+                <div class="hint">Chọn file firmware (.bin) để cập nhật.</div>
+
+                <form action="/system/update" method="POST" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <input type="file" name="firmware" />
+                    </div>
+                    <div class="btn-row">
+                        <button type="submit" class="btn btn-primary btn-sm">Upload &amp; Update</button>
+                    </div>
+                </form>
+                <hr />
+
+                <div class="section-title">Actions</div>
+                <div class="btn-row">
+                    <form action="/system/restart" method="POST">
+                        <button type="submit" class="btn btn-outline btn-sm">Restart Device</button>
+                    </form>
+
+                    <form action="/system/factory_reset" method="POST"
+                        onsubmit="return confirm('Reset factory? Tất cả cấu hình sẽ mất.');">
+                        <button type="submit" class="btn btn-danger btn-sm">Factory Reset</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching
+        (function () {
+            var buttons = document.querySelectorAll(".tab-btn");
+            var contents = {
+                wifi: document.getElementById("tab-wifi"),
+                relay: document.getElementById("tab-relay"),
+                server: document.getElementById("tab-server"),
+                system: document.getElementById("tab-system")
+            };
+
+            function showTab(name) {
+                buttons.forEach(function (btn) {
+                    btn.classList.toggle("active", btn.getAttribute("data-tab") === name);
+                });
+
+                for (var key in contents) {
+                    if (!contents.hasOwnProperty(key)) continue;
+                    contents[key].classList.toggle("active", key === name);
+                }
+            }
+
+            buttons.forEach(function (btn) {
+                btn.addEventListener("click", function () {
+                    var name = btn.getAttribute("data-tab");
+                    showTab(name);
+                });
+            });
+        })();
+
+        // Toggle WiFi password visibility
+        (function () {
+            var pwInput = document.getElementById("password");
+            var toggle = document.getElementById("togglePassword");
+
+            if (pwInput && toggle) {
+                toggle.addEventListener("change", function () {
+                    pwInput.type = toggle.checked ? "text" : "password";
+                });
+            }
+        })();
+
+        // DHCP / Static toggle
+        (function () {
+            var ipMode = document.getElementById("ip_mode");
+            var staticBlock = document.getElementById("static_ip_block");
+
+            function updateStaticVisibility() {
+                if (!ipMode) return;
+                var v = ipMode.value;
+                staticBlock.style.display = (v === "static") ? "block" : "none";
+            }
+
+            if (ipMode) {
+                ipMode.addEventListener("change", updateStaticVisibility);
+                updateStaticVisibility();
+            }
+        })();
+
+        // Helper: serialize form to x-www-form-urlencoded
+        function formToUrlencoded(form) {
+            var data = [];
+            var elements = form.querySelectorAll("input, select, textarea");
+            elements.forEach(function (el) {
+                if (!el.name) return;
+                if (el.type === 'checkbox') {
+                    data.push(encodeURIComponent(el.name) + "=" + encodeURIComponent(el.checked ? '1' : '0'));
+                } else {
+                    data.push(encodeURIComponent(el.name) + "=" + encodeURIComponent(el.value));
+                }
+            });
+            return data.join("&");
+        }
+
+        // Load WiFi info
+        (function () {
+            fetch("/wifi/info")
+                .then(function (r) { return r.json(); })
+                .then(function (j) {
+                    try {
+                        if (j.ssid) document.getElementById("ssid").value = j.ssid || "";
+                        if (j.ip_mode) {
+                            var sel = document.getElementById("ip_mode");
+                            sel.value = j.ip_mode;
+                            sel.dispatchEvent(new Event("change"));
+                        }
+                        if (j.ip) document.getElementById("ip").value = j.ip || "";
+                        if (j.mask) document.getElementById("mask").value = j.mask || "";
+                        if (j.gw) document.getElementById("gw").value = j.gw || "";
+                        if (j.dns1) document.getElementById("dns1").value = j.dns1 || "";
+                        if (j.dns2) document.getElementById("dns2").value = j.dns2 || "";
+                    } catch (e) { }
+                })
+                .catch(function () { });
+        })();
+
+        // Save WiFi
+        (function () {
+            var form = document.getElementById("wifi_form");
+            var statusEl = document.getElementById("wifi_status");
+            if (!form) return;
+            form.addEventListener("submit", function (ev) {
+                ev.preventDefault();
+                statusEl.textContent = "Saving...";
+                fetch("/wifi/save", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: formToUrlencoded(form)
+                })
+                    .then(function (r) { return r.json(); })
+                    .then(function (j) {
+                        statusEl.textContent = j.message || "Saved. Device may reboot.";
+                    })
+                    .catch(function () { statusEl.textContent = "Error saving WiFi."; });
+            });
+        })();
+
+        // Relay logic
+        (function () {
+            // Utility to enforce mutual exclusivity of two checkboxes
+            function enforcePair(aId, bId) {
+                var a = document.getElementById(aId);
+                var b = document.getElementById(bId);
+                if (!a || !b) return;
+                a.addEventListener('change', function () { if (a.checked) b.checked = false; });
+                b.addEventListener('change', function () { if (b.checked) a.checked = false; });
+            }
+
+            // Enable or disable control group based on enable checkbox
+            function hookEnable(enableId, controlIds) {
+                var en = document.getElementById(enableId);
+                if (!en) return;
+                function update() {
+                    var disabled = !en.checked;
+                    controlIds.forEach(function (id) {
+                        var el = document.getElementById(id);
+                        if (el) {
+                            el.disabled = disabled;
+                            // Also disable/enable the switch wrapper
+                            var switchEl = document.getElementById(id.replace('_control', '_switch'));
+                            if (switchEl) {
+                                if (disabled) {
+                                    switchEl.classList.add('disabled');
+                                } else {
+                                    switchEl.classList.remove('disabled');
+                                }
+                            }
+                        }
+                    });
+                }
+                en.addEventListener('change', update);
+                update(); // initial
+            }
+
+            // Update switch state text and send immediate control command
+            function updateSwitchState(controlId, stateId) {
+                var control = document.getElementById(controlId);
+                var state = document.getElementById(stateId);
+                if (control && state) {
+                    control.addEventListener('change', function() {
+                        state.textContent = this.checked ? 'ON' : 'OFF';
+                        state.style.color = this.checked ? 'var(--success)' : '#666';
+                        
+                        // Immediately control relay when switch is toggled
+                        var relayNum = controlId === 'r1_control' ? 1 : 2;
+                        var relayState = this.checked ? 'on' : 'off';
+                        
+                        // Send control command immediately
+                        fetch('/relay/set', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: 'relay=' + relayNum + '&state=' + relayState
+                        })
+                        .then(function(r) { return r.json(); })
+                        .then(function(j) {
+                            if (j.ok) {
+                                // Success - state already updated visually
+                                console.log('Relay ' + relayNum + ' set to ' + relayState);
+                            } else {
+                                // Revert switch if failed
+                                control.checked = !control.checked;
+                                state.textContent = control.checked ? 'ON' : 'OFF';
+                                state.style.color = control.checked ? 'var(--success)' : '#666';
+                                console.error('Failed to control relay');
+                            }
+                        })
+                        .catch(function(err) {
+                            // Revert switch on error
+                            control.checked = !control.checked;
+                            state.textContent = control.checked ? 'ON' : 'OFF';
+                            state.style.color = control.checked ? 'var(--success)' : '#666';
+                            console.error('Error controlling relay:', err);
+                        });
+                    });
+                    // Initial state
+                    state.textContent = control.checked ? 'ON' : 'OFF';
+                    state.style.color = control.checked ? 'var(--success)' : '#666';
+                }
+            }
+
+            function setupRelayChannel(prefix) {
+                enforcePair(prefix + '_no', prefix + '_nc');   // NO <-> NC
+                hookEnable(prefix + '_enable', [prefix + '_no', prefix + '_nc', prefix + '_control']);
+                updateSwitchState(prefix + '_control', prefix + '_state');
+            }
+
+            setupRelayChannel('r1');
+            setupRelayChannel('r2');
+
+            // Load current relay config (if backend exposes /relay/info)
+            (function loadRelay() {
+                fetch('/relay/info')
+                    .then(function (r) { return r.json(); })
+                    .then(function (j) {
+                        try {
+                            // Channel 1
+                            if (j.r1_enable !== undefined) {
+                                document.getElementById('r1_enable').checked = !!j.r1_enable;
+                            }
+                            if (j.r1_no !== undefined) document.getElementById('r1_no').checked = !!j.r1_no;
+                            if (j.r1_nc !== undefined) document.getElementById('r1_nc').checked = !!j.r1_nc;
+                            
+                            // Handle both old ON/OFF format and new CONTROL format
+                            if (j.r1_control !== undefined) {
+                                document.getElementById('r1_control').checked = !!j.r1_control;
+                            } else if (j.r1_on !== undefined) {
+                                // Backward compatibility with old ON field
+                                document.getElementById('r1_control').checked = !!j.r1_on;
+                            }
+
+                            // Channel 2
+                            if (j.r2_enable !== undefined) {
+                                document.getElementById('r2_enable').checked = !!j.r2_enable;
+                            }
+                            if (j.r2_no !== undefined) document.getElementById('r2_no').checked = !!j.r2_no;
+                            if (j.r2_nc !== undefined) document.getElementById('r2_nc').checked = !!j.r2_nc;
+                            
+                            if (j.r2_control !== undefined) {
+                                document.getElementById('r2_control').checked = !!j.r2_control;
+                            } else if (j.r2_on !== undefined) {
+                                // Backward compatibility with old ON field
+                                document.getElementById('r2_control').checked = !!j.r2_on;
+                            }
+
+                            // Trigger enable toggles to update disabled state
+                            var en1 = document.getElementById('r1_enable');
+                            if (en1) en1.dispatchEvent(new Event('change'));
+                            var en2 = document.getElementById('r2_enable');
+                            if (en2) en2.dispatchEvent(new Event('change'));
+                            
+                            // Update switch state text
+                            document.getElementById('r1_control').dispatchEvent(new Event('change'));
+                            document.getElementById('r2_control').dispatchEvent(new Event('change'));
+                        } catch (e) { console.error(e); }
+                    })
+                    .catch(function () { });
+            })();
+
+            // Submit handler
+            (function handleSubmit() {
+                var form = document.getElementById('relay_form');
+                var status = document.getElementById('relay_status');
+                if (!form) return;
+                form.addEventListener('submit', function (ev) {
+                    ev.preventDefault();
+                    status.textContent = 'Saving...';
+                    
+                    // Build payload with all fields including control switches
+                    var fields = [
+                        'r1_enable', 'r1_no', 'r1_nc', 'r1_control',
+                        'r2_enable', 'r2_no', 'r2_nc', 'r2_control'
+                    ];
+                    
+                    var data = fields.map(function (k) {
+                        var el = document.getElementById(k);
+                        return encodeURIComponent(k) + "=" + encodeURIComponent(el && el.checked ? '1' : '0');
+                    }).join('&');
+
+                    fetch('/relay/save', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: data
+                    })
+                        .then(function (r) { return r.json(); })
+                        .then(function (j) {
+                            status.textContent = j.message || 'Saved.';
+                        })
+                        .catch(function () { status.textContent = 'Error saving relay config.'; });
+                });
+            })();
+        })();
+
+        // Server config
+        (function () {
+            var form = document.getElementById("server_form");
+            var statusEl = document.getElementById("server_status");
+            if (!form) return;
+
+            // load
+            fetch("/server/info")
+                .then(function (r) { return r.json(); })
+                .then(function (j) {
+                    try {
+                        if (j.server_ip) document.getElementById("server_ip").value = j.server_ip || "";
+                        if (j.server_port) document.getElementById("server_port").value = j.server_port || "";
+                        if (j.access_token) document.getElementById("access_token").value = j.access_token || "";
+                    } catch (e) { }
+                })
+                .catch(function () { });
+
+            form.addEventListener("submit", function (ev) {
+                ev.preventDefault();
+                statusEl.textContent = "Saving...";
+
+                var accessToken = document.getElementById("access_token").value;
+                if (!accessToken) {
+                    statusEl.textContent = "Please enter access token!";
+                    return;
+                }
+
+                fetch("/server/save", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: formToUrlencoded(form) + "&access_token=" + encodeURIComponent(accessToken)
+                })
+                    .then(function (r) { return r.json(); })
+                    .then(function (j) {
+                        if (j.success) {
+                            statusEl.textContent = j.message;
+                        } else {
+                            statusEl.textContent = j.message || "Error saving server config.";
+                        }
+                    })
+                    .catch(function () {
+                        statusEl.textContent = "Error saving server config.";
+                    });
+            });
+        })();
+
+        // System info
+        (function () {
+            fetch("/system/info")
+                .then(function (r) { return r.json(); })
+                .then(function (j) {
+                    try {
+                        if (j.device_id) document.getElementById("device_id").textContent = j.device_id;
+                        if (j.fw_version) document.getElementById("fw_version").textContent = j.fw_version;
+                        if (j.current_ip) document.getElementById("current_ip").textContent = j.current_ip;
+                        if (j.wifi_ssid) document.getElementById("wifi_ssid").textContent = j.wifi_ssid;
+                        if (j.wifi_mac) document.getElementById("wifi_mac").textContent = j.wifi_mac;
+                        if (j.wifi_rssi !== undefined) document.getElementById("wifi_rssi").textContent = j.wifi_rssi + " dBm";
+                        if (j.uptime) document.getElementById("uptime").textContent = j.uptime;
+                        if (j.free_heap) document.getElementById("free_heap").textContent = j.free_heap + " bytes";
+                        if (j.reset_reason) document.getElementById("reset_reason").textContent = j.reset_reason;
+
+                        if (j.ap_ssid) {
+                            document.getElementById("header_subtitle").textContent = j.ap_ssid;
+                        }
+                    } catch (e) { }
+                })
+                .catch(function () { });
+        })();
+    </script>
+</body>
+
+</html>

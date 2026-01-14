@@ -1,0 +1,50 @@
+
+This directory is intended for PlatformIO Test Runner and project tests.
+
+Unit Testing is a software testing method by which individual units of
+source code, sets of one or more MCU program modules together with associated
+control data, usage procedures, and operating procedures, are tested to
+determine whether they are fit for use. Unit testing finds problems early
+in the development cycle.
+
+More information about PlatformIO Unit Testing:
+- https://docs.platformio.org/en/latest/advanced/unit-testing/index.html
+
+---
+
+## RelayService Test Case
+
+### Files:
+- `RelayService_Test.cpp` - File test case đầy đủ cho RelayService
+- `test_main_example.cpp` - Ví dụ cách sử dụng test
+
+### Cách sử dụng:
+
+#### Cách 1: Chạy test trong main.cpp
+1. Mở `src/main.cpp`
+2. Thêm include: `#include "../test/RelayService_Test.cpp"`
+3. Trong `setup()`, thêm: `testRelayService();` hoặc `testRelayServiceBasic();`
+
+#### Cách 2: Tạo file test riêng
+1. Copy nội dung từ `test_main_example.cpp`
+2. Tạo file mới trong `src/` (ví dụ: `src/test_relay.cpp`)
+3. Compile và upload
+
+### Các test case bao gồm:
+1. **test_RelayInit()** - Kiểm tra khởi tạo relay
+2. **test_RelaySetByIndex()** - Test bật/tắt theo index (1, 2, ...)
+3. **test_RelaySetByPin()** - Test bật/tắt theo pin number
+4. **test_RelayEdgeCases()** - Test với index ngoài phạm vi
+5. **test_RelaySequence()** - Test tuần tự bật/tắt nhiều relay
+6. **test_RelayInvalidPin()** - Test với pin không tồn tại
+7. **test_RelayExpansion()** - Kiểm tra tính mở rộng (NUM_RELAYS tự động)
+8. **test_RelayPerformance()** - Test hiệu năng
+
+### Hàm test:
+- `testRelayService()` - Chạy tất cả test cases (đầy đủ)
+- `testRelayServiceBasic()` - Test cơ bản (nhanh hơn)
+
+### Lưu ý:
+- Test sẽ in kết quả ra Serial Monitor (115200 baud)
+- Đảm bảo đã kết nối Serial Monitor trước khi chạy test
+- Test sẽ tự động kiểm tra số lượng relay từ mảng `RELAY_PINS[]` trong `ConfigStore.h`
