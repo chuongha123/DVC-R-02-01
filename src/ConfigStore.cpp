@@ -8,6 +8,15 @@ ServerConfig g_serverCfg;
 // Dùng đúng macro trong header
 static const int SLOT_WIFI = SLOT_WIFI_BASE;
 static const int SLOT_SERVER = SLOT_SERVER_BASE;
+static const int SLOT_SCHEDULE = SLOT_SCHEDULE_BASE;
+
+// Global schedule storage
+static ScheduleItem schedules[MAX_SCHEDULES];
+static int scheduleCount = 0;
+
+// Forward declarations
+ScheduleItem* ConfigStore_GetSchedules() { return schedules; }
+int* ConfigStore_GetScheduleCount() { return &scheduleCount; }
 
 // ====== CRC32 & blob helpers ======
 static uint32_t crc32_update(uint32_t crc, const uint8_t *data, size_t len)
@@ -157,12 +166,44 @@ static void loadServerFromEeprom()
     g_serverCfg.serial_no = String(doc["serial_no"] | "");
 }
 
+static void loadScheduleFromEeprom()
+{
+    scheduleCount = 0;
+    uint8_t buf[112]; // Đủ cho MAX_SCHEDULES
+    uint16_t n = 0;
+    if (!eepromReadBlob(SLOT_SCHEDULE, buf, sizeof(buf), n))
+        return;
+
+    JsonDocument doc;
+    if (deserializeJson(doc, buf, n) != DeserializationError::Ok)
+        return;
+
+    JsonArray arr = doc["schedules"].to<JsonArray>();
+    scheduleCount = 0;
+    for (JsonObject item : arr)
+    {
+        if (scheduleCount >= MAX_SCHEDULES)
+            break;
+        schedules[scheduleCount].enabled = item["enabled"] | 0;
+        schedules[scheduleCount].relayIndex = item["relay"] | 1;
+        schedules[scheduleCount].daysOfWeek = item["days"] | 0x7F;
+        schedules[scheduleCount].hour = item["hour"] | 0;
+        schedules[scheduleCount].minute = item["minute"] | 0;
+        schedules[scheduleCount].action = item["action"] | 0;
+        String nameStr = item["name"] | "";
+        strncpy(schedules[scheduleCount].name, nameStr.c_str(), 31);
+        schedules[scheduleCount].name[31] = '\0';
+        scheduleCount++;
+    }
+}
+
 // ================== FACTORY RESET ==================
 
 void ConfigStore_FactoryResetAll()
 {
     eepromWipeSlot(SLOT_WIFI, 256);
     eepromWipeSlot(SLOT_SERVER, 256);
+    eepromWipeSlot(SLOT_SCHEDULE, 112);
     EEPROM.commit();
 
     // Reset về default trong RAM
@@ -172,6 +213,9 @@ void ConfigStore_FactoryResetAll()
     // String keepSerialNo = g_serverCfg.serial_no; // Lưu lại serial_no
     g_serverCfg = ServerConfig();
     // g_serverCfg.serial_no = keepSerialNo; // Khôi phục serial_no
+
+    // Reset schedule
+    scheduleCount = 0;
 
     // Lưu lại serial_no vào EEPROM
     ConfigStore_SaveServer();
@@ -227,12 +271,35 @@ void ConfigStore_SaveWifi()
     (void)eepromWriteBlob(SLOT_WIFI, (uint8_t *)buf, (uint16_t)n);
 }
 
+void ConfigStore_SaveSchedule()
+{
+    JsonDocument doc;
+    JsonArray arr = doc["schedules"].to<JsonArray>();
+
+    for (int i = 0; i < scheduleCount; i++)
+    {
+        JsonObject item = arr.add<JsonObject>();
+        item["enabled"] = schedules[i].enabled;
+        item["relay"] = schedules[i].relayIndex;
+        item["days"] = schedules[i].daysOfWeek;
+        item["hour"] = schedules[i].hour;
+        item["minute"] = schedules[i].minute;
+        item["action"] = schedules[i].action;
+        item["name"] = schedules[i].name;
+    }
+
+    char buf[512];
+    size_t n = serializeJson(doc, buf, sizeof(buf));
+    (void)eepromWriteBlob(SLOT_SCHEDULE, (uint8_t *)buf, (uint16_t)n);
+}
+
 void ConfigStore_Init()
 {
     EEPROM.begin(EEPROM_BYTES);
 
     loadWifiFromEeprom();
     loadServerFromEeprom();
+    loadScheduleFromEeprom();
 
     // Nếu serial_no trống thì tự generate rồi lưu
     if (!g_serverCfg.serial_no.length())
@@ -246,4 +313,6 @@ void ConfigStore_Init()
     Serial.println(g_wifiCfg.ssid);
     Serial.print(F("  Device ID : "));
     Serial.println(ConfigStore_GetDeviceId());
+    Serial.print(F("  Schedules loaded : "));
+    Serial.println(scheduleCount);
 }

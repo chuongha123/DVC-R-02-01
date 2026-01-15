@@ -445,6 +445,7 @@
             <div class="tabs">
                 <button class="tab-btn active" data-tab="wifi">WiFi</button>
                 <button class="tab-btn" data-tab="relay">Device</button>
+                <button class="tab-btn" data-tab="schedule">Schedule</button>
                 <button class="tab-btn" data-tab="server">Server</button>
                 <button class="tab-btn" data-tab="system">System</button>
             </div>
@@ -682,6 +683,88 @@
                     </form>
                 </div>
             </div>
+
+            <!-- Schedule Tab -->
+            <div class="tab-content" id="tab-schedule">
+                <div class="section-title">Lịch trình Relay</div>
+                <div class="hint">Thiết lập lịch bật/tắt relay tự động theo thứ, ngày, giờ.</div>
+
+                <div class="btn-row">
+                    <button type="button" class="btn btn-primary btn-sm" onclick="addSchedule()">+ Thêm Schedule</button>
+                </div>
+
+                <div id="schedule_list" style="margin-top: 12px;"></div>
+
+                <!-- Modal form để thêm/sửa schedule -->
+                <div id="schedule_modal" style="display:none; margin-top: 12px; padding: 12px; background: #f5f7fb; border-radius: 8px;">
+                    <form id="schedule_form">
+                        <input type="hidden" id="schedule_id" value="-1">
+                        <div class="form-group">
+                            <label>Tên schedule</label>
+                            <input type="text" id="schedule_name" placeholder="Tên schedule (tùy chọn)" style="width: 100%;">
+                        </div>
+                        <div class="form-group">
+                            <label>Relay</label>
+                            <select id="schedule_relay" style="width: 100%;">
+                                <option value="1">Relay 1</option>
+                                <option value="2">Relay 2</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Thứ trong tuần</label>
+                            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                                <label style="display: flex; align-items: center; gap: 4px;">
+                                    <input type="checkbox" value="1" class="day-check"> T2
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 4px;">
+                                    <input type="checkbox" value="2" class="day-check"> T3
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 4px;">
+                                    <input type="checkbox" value="4" class="day-check"> T4
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 4px;">
+                                    <input type="checkbox" value="8" class="day-check"> T5
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 4px;">
+                                    <input type="checkbox" value="16" class="day-check"> T6
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 4px;">
+                                    <input type="checkbox" value="32" class="day-check"> T7
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 4px;">
+                                    <input type="checkbox" value="64" class="day-check"> CN
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group" style="display: flex; gap: 12px;">
+                            <div style="flex: 1;">
+                                <label>Giờ (0-23)</label>
+                                <input type="number" id="schedule_hour" min="0" max="23" value="0" style="width: 100%;">
+                            </div>
+                            <div style="flex: 1;">
+                                <label>Phút (0-59)</label>
+                                <input type="number" id="schedule_minute" min="0" max="59" value="0" style="width: 100%;">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Hành động</label>
+                            <select id="schedule_action" style="width: 100%;">
+                                <option value="1">Bật (ON)</option>
+                                <option value="0">Tắt (OFF)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label style="display: flex; align-items: center; gap: 4px;">
+                                <input type="checkbox" id="schedule_enabled" checked> Kích hoạt
+                            </label>
+                        </div>
+                        <div class="btn-row">
+                            <button type="submit" class="btn btn-primary btn-sm">Lưu</button>
+                            <button type="button" onclick="closeScheduleModal()" class="btn btn-outline btn-sm">Hủy</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -692,6 +775,7 @@
             var contents = {
                 wifi: document.getElementById("tab-wifi"),
                 relay: document.getElementById("tab-relay"),
+                schedule: document.getElementById("tab-schedule"),
                 server: document.getElementById("tab-server"),
                 system: document.getElementById("tab-system")
             };
@@ -1049,6 +1133,138 @@
                 })
                 .catch(function () { });
         })();
+
+        // Schedule functions
+        function formatDays(days) {
+            var dayNames = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+            var result = [];
+            for (var i = 0; i < 7; i++) {
+                if (days & (1 << i)) result.push(dayNames[i]);
+            }
+            return result.length > 0 ? result.join(', ') : 'Không';
+        }
+
+        function loadSchedules() {
+            fetch('/schedule/list')
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    var html = '<table class="relay-table" style="width: 100%; margin-top: 8px;">';
+                    html += '<thead><tr><th>Tên</th><th>Relay</th><th>Thứ</th><th>Giờ</th><th>Hành động</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>';
+                    
+                    if (data.schedules && data.schedules.length > 0) {
+                        data.schedules.forEach(function (s, idx) {
+                            html += '<tr>';
+                            html += '<td>' + (s.name && s.name.length > 0 ? s.name : 'Schedule ' + idx) + '</td>';
+                            html += '<td>Relay ' + s.relay + '</td>';
+                            html += '<td>' + formatDays(s.days) + '</td>';
+                            html += '<td>' + String(s.hour).padStart(2, '0') + ':' + String(s.minute).padStart(2, '0') + '</td>';
+                            html += '<td>' + (s.action ? 'ON' : 'OFF') + '</td>';
+                            html += '<td>' + (s.enabled ? '✓ Kích hoạt' : '✗ Tắt') + '</td>';
+                            html += '<td><button onclick="editSchedule(' + idx + ')" class="btn btn-outline btn-sm" style="margin-right: 4px;">Sửa</button>';
+                            html += '<button onclick="deleteSchedule(' + idx + ')" class="btn btn-danger btn-sm">Xóa</button></td>';
+                            html += '</tr>';
+                        });
+                    } else {
+                        html += '<tr><td colspan="7" style="text-align: center; padding: 16px; color: #60738a;">Chưa có schedule nào. Nhấn "Thêm Schedule" để tạo mới.</td></tr>';
+                    }
+                    html += '</tbody></table>';
+                    document.getElementById('schedule_list').innerHTML = html;
+                })
+                .catch(function (err) {
+                    document.getElementById('schedule_list').innerHTML = '<div style="color: var(--danger); padding: 12px;">Lỗi tải danh sách schedule.</div>';
+                });
+        }
+
+        function addSchedule() {
+            document.getElementById('schedule_id').value = '-1';
+            document.getElementById('schedule_name').value = '';
+            document.getElementById('schedule_relay').value = '1';
+            document.querySelectorAll('.day-check').forEach(function (cb) { cb.checked = false; });
+            document.getElementById('schedule_hour').value = '0';
+            document.getElementById('schedule_minute').value = '0';
+            document.getElementById('schedule_action').value = '1';
+            document.getElementById('schedule_enabled').checked = true;
+            document.getElementById('schedule_modal').style.display = 'block';
+        }
+
+        function editSchedule(id) {
+            fetch('/schedule/list')
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    if (data.schedules && data.schedules[id]) {
+                        var s = data.schedules[id];
+                        document.getElementById('schedule_id').value = id;
+                        document.getElementById('schedule_name').value = s.name || '';
+                        document.getElementById('schedule_relay').value = s.relay;
+                        document.querySelectorAll('.day-check').forEach(function (cb) {
+                            cb.checked = (s.days & parseInt(cb.value)) !== 0;
+                        });
+                        document.getElementById('schedule_hour').value = s.hour;
+                        document.getElementById('schedule_minute').value = s.minute;
+                        document.getElementById('schedule_action').value = s.action;
+                        document.getElementById('schedule_enabled').checked = s.enabled === 1;
+                        document.getElementById('schedule_modal').style.display = 'block';
+                    }
+                });
+        }
+
+        function deleteSchedule(id) {
+            if (!confirm('Bạn có chắc muốn xóa schedule này?')) return;
+            fetch('/schedule/delete?id=' + id, { method: 'POST' })
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    if (data.ok) {
+                        loadSchedules();
+                    }
+                });
+        }
+
+        function closeScheduleModal() {
+            document.getElementById('schedule_modal').style.display = 'none';
+        }
+
+        // Save schedule form
+        document.getElementById('schedule_form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            var days = 0;
+            document.querySelectorAll('.day-check:checked').forEach(function (cb) {
+                days |= parseInt(cb.value);
+            });
+
+            var data = {
+                id: parseInt(document.getElementById('schedule_id').value),
+                name: document.getElementById('schedule_name').value,
+                relay: parseInt(document.getElementById('schedule_relay').value),
+                days: days,
+                hour: parseInt(document.getElementById('schedule_hour').value),
+                minute: parseInt(document.getElementById('schedule_minute').value),
+                action: parseInt(document.getElementById('schedule_action').value),
+                enabled: document.getElementById('schedule_enabled').checked ? 1 : 0
+            };
+
+            fetch('/schedule/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    if (data.ok) {
+                        loadSchedules();
+                        closeScheduleModal();
+                    } else {
+                        alert('Lỗi lưu schedule: ' + (data.error || 'Unknown error'));
+                    }
+                })
+                .catch(function (err) {
+                    alert('Lỗi lưu schedule.');
+                });
+        });
+
+        // Load schedules when schedule tab is clicked
+        document.querySelector('[data-tab="schedule"]').addEventListener('click', function () {
+            loadSchedules();
+        });
     </script>
 </body>
 

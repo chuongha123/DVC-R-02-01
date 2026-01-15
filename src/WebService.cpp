@@ -387,6 +387,146 @@ RelayState getCurrentRelayState()
     return state;
 }
 
+// ========== SCHEDULE HANDLERS ==========
+
+// GET /schedule/list - Lấy danh sách schedule
+static void handleScheduleList()
+{
+    if (!ensureAuth())
+        return;
+
+    ScheduleItem *schedules = ConfigStore_GetSchedules();
+    int *scheduleCount = ConfigStore_GetScheduleCount();
+
+    JsonDocument doc;
+    JsonArray arr = doc["schedules"].to<JsonArray>();
+
+    for (int i = 0; i < *scheduleCount; i++)
+    {
+        JsonObject item = arr.add<JsonObject>();
+        item["id"] = i;
+        item["enabled"] = schedules[i].enabled;
+        item["relay"] = schedules[i].relayIndex;
+        item["days"] = schedules[i].daysOfWeek;
+        item["hour"] = schedules[i].hour;
+        item["minute"] = schedules[i].minute;
+        item["action"] = schedules[i].action;
+        item["name"] = schedules[i].name;
+    }
+
+    sendJson(doc);
+}
+
+// POST /schedule/save - Lưu schedule
+static void handleScheduleSave()
+{
+    if (!ensureAuth())
+        return;
+
+    String body = server.arg("plain");
+    if (body.length() == 0)
+    {
+        // Try form data
+        body = "";
+        if (server.hasArg("id"))
+            body += "\"id\":" + server.arg("id") + ",";
+        if (server.hasArg("enabled"))
+            body += "\"enabled\":" + server.arg("enabled") + ",";
+        if (server.hasArg("relay"))
+            body += "\"relay\":" + server.arg("relay") + ",";
+        if (server.hasArg("days"))
+            body += "\"days\":" + server.arg("days") + ",";
+        if (server.hasArg("hour"))
+            body += "\"hour\":" + server.arg("hour") + ",";
+        if (server.hasArg("minute"))
+            body += "\"minute\":" + server.arg("minute") + ",";
+        if (server.hasArg("action"))
+            body += "\"action\":" + server.arg("action") + ",";
+        if (server.hasArg("name"))
+            body += "\"name\":\"" + server.arg("name") + "\",";
+        if (body.length() > 0)
+        {
+            body = "{" + body.substring(0, body.length() - 1) + "}";
+        }
+    }
+
+    JsonDocument doc;
+    DeserializationError err = deserializeJson(doc, body);
+    if (err != DeserializationError::Ok && body.length() > 0)
+    {
+        JsonDocument resp;
+        resp["ok"] = false;
+        resp["error"] = "Invalid JSON";
+        sendJson(resp);
+        return;
+    }
+
+    ScheduleItem *schedules = ConfigStore_GetSchedules();
+    int *scheduleCount = ConfigStore_GetScheduleCount();
+
+    int id = doc["id"] | -1; // -1 = new, >=0 = update
+
+    if (id >= 0 && id < *scheduleCount)
+    {
+        // Update existing
+        schedules[id].enabled = doc["enabled"] | 0;
+        schedules[id].relayIndex = doc["relay"] | 1;
+        schedules[id].daysOfWeek = doc["days"] | 0x7F;
+        schedules[id].hour = doc["hour"] | 0;
+        schedules[id].minute = doc["minute"] | 0;
+        schedules[id].action = doc["action"] | 0;
+        String nameStr = doc["name"] | "";
+        strncpy(schedules[id].name, nameStr.c_str(), 31);
+        schedules[id].name[31] = '\0';
+    }
+    else if (*scheduleCount < MAX_SCHEDULES)
+    {
+        // Add new
+        int idx = (*scheduleCount)++;
+        schedules[idx].enabled = doc["enabled"] | 0;
+        schedules[idx].relayIndex = doc["relay"] | 1;
+        schedules[idx].daysOfWeek = doc["days"] | 0x7F;
+        schedules[idx].hour = doc["hour"] | 0;
+        schedules[idx].minute = doc["minute"] | 0;
+        schedules[idx].action = doc["action"] | 0;
+        String nameStr = doc["name"] | "";
+        strncpy(schedules[idx].name, nameStr.c_str(), 31);
+        schedules[idx].name[31] = '\0';
+    }
+
+    ConfigStore_SaveSchedule();
+
+    JsonDocument resp;
+    resp["ok"] = true;
+    sendJson(resp);
+}
+
+// POST /schedule/delete?id=X
+static void handleScheduleDelete()
+{
+    if (!ensureAuth())
+        return;
+
+    int id = server.arg("id").toInt();
+    ScheduleItem *schedules = ConfigStore_GetSchedules();
+    int *scheduleCount = ConfigStore_GetScheduleCount();
+
+    if (id >= 0 && id < *scheduleCount)
+    {
+        // Xóa bằng cách dịch chuyển
+        for (int i = id; i < *scheduleCount - 1; i++)
+        {
+            schedules[i] = schedules[i + 1];
+        }
+        (*scheduleCount)--;
+        ConfigStore_SaveSchedule();
+    }
+
+    JsonDocument resp;
+    resp["ok"] = true;
+    sendJson(resp);
+}
+
 // ========== PUBLIC API ==========
 
 void WebService_Begin()
@@ -414,6 +554,11 @@ void WebService_Begin()
     // API
     server.on("/api/getIP", HTTP_GET, handleApiGetIp);
     server.on("/api/setSerialNo", HTTP_GET, handleApiSetSerialNo);
+
+    // Schedule
+    server.on("/schedule/list", HTTP_GET, handleScheduleList);
+    server.on("/schedule/save", HTTP_POST, handleScheduleSave);
+    server.on("/schedule/delete", HTTP_POST, handleScheduleDelete);
 
     // OTA firmware: /system/update (cũng yêu cầu Basic Auth)
     httpUpdater.setup(&server, "/system/update", WEB_USER, WEB_PASS);

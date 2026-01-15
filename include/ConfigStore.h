@@ -27,9 +27,12 @@
 
 // Slot chia vùng trong EEPROM
 // 0..255  : WifiConfig
-// 256..511: ServerConfig + IrConfig + SerialNo
+// 256..399: ServerConfig + IrConfig + SerialNo
+// 400..511: ScheduleConfig
 #define SLOT_WIFI_BASE 0
 #define SLOT_SERVER_BASE 256
+#define SLOT_SCHEDULE_BASE 400
+#define MAX_SCHEDULES 10
 
 // GPIO pins cho giao tiếp P1P2
 #define P1P2_RX_PIN GPIO_NUM_18
@@ -65,6 +68,18 @@ struct ServerConfig
     String serial_no;            // SerialNo / DeviceId (ví dụ IR000111)
 };
 
+// Schedule structure
+struct ScheduleItem
+{
+    uint8_t enabled;      // 0 = disabled, 1 = enabled
+    uint8_t relayIndex;  // 1, 2, 3... (relay number)
+    uint8_t daysOfWeek; // Bitmask: bit 0=Mon, 1=Tue, ..., 6=Sun (0x7F = all days)
+    uint8_t hour;       // 0-23
+    uint8_t minute;     // 0-59
+    uint8_t action;     // 0 = OFF, 1 = ON
+    char name[32];      // Tên schedule (optional)
+};
+
 extern WifiConfig g_wifiCfg;
 extern ServerConfig g_serverCfg;
 
@@ -79,5 +94,11 @@ String ConfigStore_GetDeviceId();
 void ConfigStore_SaveServer(); // Lưu g_serverCfg + g_irCfg vào EEPROM (slot SERVER)
 
 void ConfigStore_SaveWifi();
+
+void ConfigStore_SaveSchedule(); // Lưu schedule vào EEPROM
+
+// Access schedule data (for WebService)
+ScheduleItem* ConfigStore_GetSchedules();
+int* ConfigStore_GetScheduleCount();
 
 void ConfigStore_Init();
