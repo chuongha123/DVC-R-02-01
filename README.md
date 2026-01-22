@@ -497,4 +497,4 @@ User/Server
 - PubSubClient library by Nick O'Leary
 - ESP32 Arduino Core
 #   D V C - R - 0 2 - 0 1 - V E D G E  
- 
+ "# DVC-R-02-01-VEDGE" 
